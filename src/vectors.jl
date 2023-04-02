@@ -1,5 +1,6 @@
 import Base.-
 import Base.+
+import Base.==
 
 abstract type AbstractVec3 end
 
@@ -46,6 +47,8 @@ Base.getindex(v::AbstractVec3, i::Core.Integer) = [v.x, v.y, v.z][i]
 
 Base.getindex(v::AbstractVec3, c::Colon) = [v.x, v.y, v.z]
 
+==(v::AbstractVec3, w::AbstractVec3) = all([v[i]==w[i] for i in 1:3])
+
 function random_in_unit_sphere()
     while(true)
         p = random_vec(-1, 1)
@@ -55,6 +58,10 @@ function random_in_unit_sphere()
             return p
         end
     end
+end
+
+function random_unit_vector()
+    return unit_vector(random_in_unit_sphere())
 end
 
 function norm_squared(v::AbstractVec3)
@@ -85,10 +92,6 @@ function Vec3(p)
     return Vec3(p.x, p.y, p.z)
 end
 
-function Vec3(p::RayTracingInOneWeekend.Point3)
-    return Vec3(p.x, p.y, p.z)
-end
-
 Base.:-(v::Point3, w::Point3) = Vec3(v + (-w))
 
 mutable struct Color3 <: AbstractVec3
@@ -106,4 +109,3 @@ function Color3(a::AbstractVector)
 end
 
 Base.convert(::Point3, v::Vec3) = Point3(v.x, v.y, v.z)
-Base.convert(::RayTracingInOneWeekend.Point3, v::RayTracingInOneWeekend.Vec3) = Point3(v.x, v.y, v.z)
