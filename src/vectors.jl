@@ -18,7 +18,7 @@ function random_vec()
 end
 
 function random_vec(v_min, v_max)
-    values = (rand(3) .- v_min) ./ (v_max - v_min)
+    values = v_min .+ (v_max - v_min) .* rand(3)
     return Vec3(values...)
 end
 
