@@ -17,7 +17,7 @@ function ray_color(r::Ray)
     t = 0.5 * (unit_dir[2] + 1)
     primary = Color3(1, 1, 1)
     secondary = Color3(0.5, 0.7, 1.0)
-    return t*primary + (1-t)*secondary
+    return (1-t)*primary + t*secondary
 end
 
 function ray_color(r::Ray, world, depth)
