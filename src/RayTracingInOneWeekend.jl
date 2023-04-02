@@ -28,10 +28,8 @@ function ray_color(r::Ray, world, depth)
     for obj in world
         t = hit!(r, obj, 0.001, Inf, rec)
         if t
-            #N = rec.normal
-            #return 0.5 * Color3(N[:] .+ 1)
-            dir = rec.p + rec.normal + random_in_unit_sphere()
-            return 0.5 * ray_color(Ray(rec.p, dir - rec.p), world, depth-1)
+            target = rec.p + rec.normal + random_unit_vector()
+            return 0.5 * ray_color(Ray(rec.p, target - rec.p), world, depth-1)
         end
     end
     return ray_color(r)
