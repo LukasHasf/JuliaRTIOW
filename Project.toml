@@ -1,0 +1,8 @@
+name = "RayTracingInOneWeekend"
+uuid = "a939fcb7-cc23-44c7-8246-d95ff900e8f9"
+authors = ["LukasHasf <lukas.hassfurth@uni-jena.de>"]
+version = "0.1.0"
+
+[deps]
+Images = "916415d5-f1e6-5110-898d-aaa5f9f070e0"
+ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
