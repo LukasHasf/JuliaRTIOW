@@ -35,11 +35,15 @@ function ray_color(r::Ray, world, depth)
     return ray_color(r)
 end
 
-function write_color!(arr_r, arr_g, arr_b, i, j, color, nsamples)
+function write_color!(arr, i, j, color, nsamples)
     r, g, b = color[:] ./ nsamples
-    arr_r[i,j] = r
-    arr_g[i,j] = g
-    arr_b[i,j] = b
+    arr[i,j, 1] = r
+    arr[i,j, 2] = g
+    arr[i,j, 3] = b
+end
+
+function save_img(path, arr)
+    save(path, colorview(RGB, [arr[:, :, i] for i in 1:3]...))
 end
 
 function main()
@@ -47,9 +51,7 @@ function main()
     aspect_ratio = 16/9
     img_width = 400
     img_height = trunc(Int, img_width/aspect_ratio)
-    img_r = zeros(img_height, img_width)
-    img_g = zero.(img_r)
-    img_b = zero.(img_r)
+    img = zeros(img_height, img_width, 3)
     nsamples = 100
     max_depth = 50
 
@@ -69,9 +71,9 @@ function main()
                 r = get_ray(cam, u, v)
                 pixel_color += ray_color(r, scene, max_depth)
             end
-            write_color!(img_r, img_g, img_b, i, j, pixel_color, nsamples)
+            write_color!(img, i, j, pixel_color, nsamples)
         end
-        save("render.png", colorview(RGB, img_r, img_g, img_b))
+        save_img("render.png", img)
     end
 end
 
