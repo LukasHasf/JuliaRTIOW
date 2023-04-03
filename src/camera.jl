@@ -10,9 +10,10 @@ struct Camera
     offset::Vec3
 end
 
-function Camera()
-    aspect_ratio = 16/9
-    viewport_height = 2
+function Camera(vfov, aspect_ratio)
+    θ = deg2rad(vfov)
+    h = tan(θ/2)
+    viewport_height = 2*h
     viewport_width = aspect_ratio * viewport_height
     focal_length = 1
     origin = Point3(0,0,0)
@@ -21,6 +22,11 @@ function Camera()
     lower_left_corner = origin - horizontal/2 - vertical/2 - Vec3(0, 0, focal_length)
     offset = lower_left_corner - origin
     return Camera(aspect_ratio, viewport_height, viewport_width, focal_length, origin, horizontal, vertical, lower_left_corner, offset)
+end
+
+function Camera()
+    aspect_ratio = 16/9
+    return Camera(120, aspect_ratio)
 end
 
 function get_ray(c::Camera, u, v)
