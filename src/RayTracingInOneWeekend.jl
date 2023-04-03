@@ -88,15 +88,18 @@ function main()
 
     # Rendering
     @showprogress "Rendering..." for i in 1:img_height
-        for j in 1:img_width
-            pixel_color = Color3(0, 0, 0)
-            for n in 1:nsamples
-                u = (j + rand())/img_width
-                v = (img_height-i+rand())/img_height
+        v0 = 1 - i/img_height
+        Threads.@threads for j in 1:img_width
+            #pixel_color = Color3(0,0,0)
+            pixel_color_samples = Vector{Color3}(undef, nsamples)
+            u0 = j/img_width
+            Threads.@threads for n in 1:nsamples
+                u = u0 + rand()/img_width
+                v = v0 + rand()/img_height
                 r = get_ray(cam, u, v)
-                pixel_color += ray_color(r, scene, max_depth)
+                pixel_color_samples[n] = ray_color(r, scene, max_depth) 
             end
-            write_color!(img, i, j, pixel_color, nsamples)
+            write_color!(img, i, j, sum(pixel_color_samples), nsamples)
         end
         save_img("render.png", img)
     end

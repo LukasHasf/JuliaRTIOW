@@ -7,6 +7,7 @@ struct Camera
     horizontal::Vec3
     vertical::Vec3
     lower_left_corner::Point3
+    offset::Vec3
 end
 
 function Camera()
@@ -18,9 +19,10 @@ function Camera()
     horizontal = Vec3(viewport_width, 0, 0)
     vertical = Vec3(0, viewport_height, 0)
     lower_left_corner = origin - horizontal/2 - vertical/2 - Vec3(0, 0, focal_length)
-    return Camera(aspect_ratio, viewport_height, viewport_width, focal_length, origin, horizontal, vertical, lower_left_corner)
+    offset = lower_left_corner - origin
+    return Camera(aspect_ratio, viewport_height, viewport_width, focal_length, origin, horizontal, vertical, lower_left_corner, offset)
 end
 
 function get_ray(c::Camera, u, v)
-    return Ray(c.origin, Vec3(c.lower_left_corner + u*c.horizontal + v*c.vertical - c.origin))
+    return Ray(c.origin, Vec3(c.offset + u*c.horizontal + v*c.vertical))
 end
