@@ -4,7 +4,7 @@ using Images
 using ProgressMeter
 include("vectors.jl")
 include("rays.jl")
-include("hittable.jl")
+include("material.jl")
 include("sphere.jl")
 include("camera.jl")
 
@@ -20,17 +20,31 @@ function ray_color(r::Ray)
     return (1-t)*primary + t*secondary
 end
 
+function closest_hit(r::Ray, t_min, t_max, rec, world)
+    temp_rec = HitRecord()
+    hit_anything = false
+    closest_so_far = t_max
+    for obj in world
+        if hit!(r, obj, t_min, closest_so_far, temp_rec)
+            hit_anything = true
+            closest_so_far = temp_rec.t
+            replicate!(rec, temp_rec)
+        end
+    end
+    return hit_anything
+end
+
 function ray_color(r::Ray, world, depth)
     rec = HitRecord()
     if depth < 0
         return Color3(0,0,0)
     end
-    for obj in world
-        t = hit!(r, obj, 0.001, Inf, rec)
-        if t
-            target = rec.p + rec.normal + random_unit_vector()
-            return 0.5 * ray_color(Ray(rec.p, target - rec.p), world, depth-1)
+    if closest_hit(r, 0.001, Inf, rec, world)
+        hit, scattered, attenuation = scatter!(r, rec, rec.material)
+        if hit
+            return attenuation * ray_color(scattered, world, depth-1)
         end
+        return Color3(0,0,0)
     end
     return ray_color(r)
 end
@@ -43,6 +57,8 @@ function write_color!(arr, i, j, color, nsamples)
 end
 
 function save_img(path, arr)
+    # Gamma transform
+    arr = arr .^ 0.5
     save(path, colorview(RGB, [arr[:, :, i] for i in 1:3]...))
 end
 
@@ -59,7 +75,16 @@ function main()
     cam = Camera()
 
     # World
-    scene = [Sphere(Point3(0,0,-1), 0.5), Sphere(Point3(0, -100.5,-1), 100)]
+    material_ground = Lambertian(0.8, 0.8, 0)
+    material_center = Lambertian(0.1, 0.2, 0.5)
+    material_left = Dielectric(1.5)
+    material_right = Metal(0.8, 0.6, 0.2, 0.0)
+    scene = []
+    push!(scene, Sphere(Point3(0, -100.5,-1), 100, material_ground))
+    push!(scene, Sphere(Point3(0, 0, -1), 0.5, material_center))
+    push!(scene, Sphere(Point3(-1, 0, -1), 0.5, material_left))
+    push!(scene, Sphere(Point3(-1, 0, -1), -0.4, material_left))
+    push!(scene, Sphere(Point3(1, 0, -1), 0.5, material_right))
 
     # Rendering
     @showprogress "Rendering..." for i in 1:img_height

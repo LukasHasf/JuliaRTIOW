@@ -49,6 +49,17 @@ Base.getindex(v::AbstractVec3, c::Colon) = [v.x, v.y, v.z]
 
 ==(v::AbstractVec3, w::AbstractVec3) = all([v[i]==w[i] for i in 1:3])
 
+near_zero(v::AbstractVec3) = all([abs(v[i]) < 1e-8 for i in 1:3])
+
+reflect(v::AbstractVec3, n::AbstractVec3) = v - 2*dot(v,n)*n
+
+function refract(uv::AbstractVec3, n::AbstractVec3, ηi_over_ηt)
+    cos_θ = min(dot(-uv, n), 1)
+    r_out_perp = ηi_over_ηt * (uv + cos_θ * n)
+    r_out_parallel = -sqrt(abs(1 - norm_squared(r_out_perp))) * n
+    return r_out_parallel + r_out_perp
+end
+
 function random_in_unit_sphere()
     while(true)
         p = random_vec(-1, 1)
