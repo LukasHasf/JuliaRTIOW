@@ -62,17 +62,61 @@ function save_img(path, arr)
     save(path, colorview(RGB, [arr[:, :, i] for i in 1:3]...))
 end
 
+function random_scene()
+    world = []
+    ground_material = Lambertian(0.5, 0.5, 0.5)
+    push!(world, Sphere(Point3(0, -1000, 0), 1000, ground_material))
+
+    for a in -11:11
+        for b in -11:11
+            choose_mat = rand()
+            center = Point3(a + 0.9*rand(), 0.2, b + 0.9*rand())
+            if norm(center - Point3(4, 0.2, 0)) > 0.9
+                sphere_material = Lambertian(0.5, 0.5, 0.5)
+                if choose_mat < 0.8
+                    #Diffuse
+                    albedo = Color3(random_vec() * random_vec())
+                    sphere_material = Lambertian(albedo)
+                    push!(world, Sphere(center, 0.2, sphere_material))
+                elseif choose_mat < 0.95
+                    # Metal
+                    albedo = Color3(random_vec(0.5, 1))
+                    fuzz = rand()/2
+                    sphere_material = Metal(albedo, fuzz)
+                    push!(world, Sphere(center, 0.2, sphere_material))
+                else
+                    # Glass
+                    sphere_material = Dielectric(1.5)
+                    push!(world, Sphere(center, 0.2, sphere_material))
+                end
+            end
+        end
+    end
+    material1 = Dielectric(1.5)
+    material2 = Lambertian(0.4, 0.2, 0.1)
+    material3 = Metal(0.7, 0.6, 0.5, 0.0)
+    push!(world, Sphere(Point3(0, 1,0), 1.0, material1))
+    push!(world, Sphere(Point3(-4, 1,0), 1.0, material2))
+    push!(world, Sphere(Point3(4, 1,0), 1.0, material3))
+    return world
+end
+
 function main()
     # Image
-    aspect_ratio = 16/9
-    img_width = 400
+    aspect_ratio = 3/2
+    img_width = 1200
     img_height = trunc(Int, img_width/aspect_ratio)
     img = zeros(img_height, img_width, 3)
     nsamples = 100
     max_depth = 50
+    lookfrom = Point3(13, 2, 3)
+    lookat = Point3(0, 0, 0)
+    vup = Vec3(0, 1, 0)
+    dist_to_focus = 10
+    aperture = 0.1
 
     # Camera
-    cam = Camera()
+    cam = Camera(lookfrom, lookat, vup, 20, aspect_ratio, aperture, dist_to_focus)
 
     # World
     material_ground = Lambertian(0.8, 0.8, 0)
@@ -85,6 +129,7 @@ function main()
     push!(scene, Sphere(Point3(-1, 0, -1), 0.5, material_left))
     push!(scene, Sphere(Point3(-1, 0, -1), -0.4, material_left))
     push!(scene, Sphere(Point3(1, 0, -1), 0.5, material_right))
+    scene = random_scene()
 
     # Rendering
     @showprogress "Rendering..." for i in 1:img_height

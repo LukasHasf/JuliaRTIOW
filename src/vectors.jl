@@ -75,6 +75,17 @@ function random_unit_vector()
     return unit_vector(random_in_unit_sphere())
 end
 
+function random_in_unit_disk()
+    while(true)
+        p = random_vec(-1, 1)
+        p.z = 0
+        if norm_squared(p) >= 1
+            continue
+        end
+        return p
+    end
+end
+
 function norm_squared(v::AbstractVec3)
     return v.x^2 + v.y^2 + v.z^2
 end
@@ -103,6 +114,10 @@ function Vec3(p)
     return Vec3(p.x, p.y, p.z)
 end
 
+function Point3(v)
+    return Point3(v.x, v.y, v.z)
+end
+
 Base.:-(v::Point3, w::Point3) = Vec3(v + (-w))
 
 mutable struct Color3 <: AbstractVec3
@@ -117,6 +132,10 @@ end
 
 function Color3(a::AbstractVector)
     return Color3(a[1:3]...)
+end
+
+function Color3(v)
+    return Color3(v.x, v.y, v.z)
 end
 
 Base.convert(::Point3, v::Vec3) = Point3(v.x, v.y, v.z)
